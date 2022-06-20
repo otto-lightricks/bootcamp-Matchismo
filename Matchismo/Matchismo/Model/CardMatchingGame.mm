@@ -12,21 +12,43 @@
 
 @interface CardMatchingGame()
 @property (nonatomic, readwrite) NSInteger score;
-@property (nonatomic, readwrite) NSString * lastCardFlipDescription;
+@property (nonatomic, readwrite) NSAttributedString * lastMoveDescription;
 @property (nonatomic, strong) NSMutableArray<Card *> *cards;
 @property (nonatomic, strong) NSMutableArray<Card *> *chosenCards;
 @end
 
 @implementation CardMatchingGame
 
+constexpr int TWO_MATCH_BONUS = 4;
+constexpr int THREE_THREE_MATCH_BONUS = 5;
+constexpr int THREE_TWO_MATCH_BONUS = 3;
+constexpr int MISMATCH_PENALTY = 2;
+constexpr int COST_TO_CHOOSE = 1;
+
 - (NSMutableArray<Card *> *)cards {
-  if (!_cards) _cards = [[NSMutableArray<Card *> alloc] init];
+  if (!_cards) {
+    _cards = [[NSMutableArray<Card *> alloc] init];
+  }
   return _cards;
 }
 
 - (NSMutableArray<Card *> *)chosenCards {
-  if (!_chosenCards) _chosenCards = [[NSMutableArray<Card *> alloc] init];
+  if (!_chosenCards) {
+    _chosenCards = [[NSMutableArray<Card *> alloc] init];
+  }
   return _chosenCards;
+}
+
+- (void)setLastMoveDescription:(NSAttributedString *)lastMoveDescription {
+  _lastMoveDescription = lastMoveDescription;
+  if (![lastMoveDescription isEqualToAttributedString:[[NSAttributedString alloc] initWithString:@""]]) {
+    if (!self.moveHistory) {
+      self.moveHistory = [[NSMutableAttributedString alloc] initWithAttributedString:lastMoveDescription];
+    } else {
+      [self.moveHistory appendAttributedString:self.lastMoveDescription];
+    }
+    [self.moveHistory appendAttributedString:[[NSAttributedString alloc] initWithString:@"\r"]];
+  }
 }
 
 - (instancetype)initWithCardCount: (NSUInteger)count usingDeck:(Deck *)deck {
@@ -53,6 +75,7 @@
     }
   }
   self.score = 0;
+  self.moveHistory = [[NSMutableAttributedString alloc] initWithString:@""];
   return YES;
 }
 
@@ -60,26 +83,20 @@
   return (index < self.cards.count) ? self.cards[index] : nil;
 }
 
-constexpr int TWO_MATCH_BONUS = 4;
-constexpr int THREE_THREE_MATCH_BONUS = 5;
-constexpr int THREE_TWO_MATCH_BONUS = 3;
-constexpr int MISMATCH_PENALTY = 2;
-constexpr int COST_TO_CHOOSE = 1;
-
 - (void)chooseCardAtIndex: (NSUInteger)index {
   Card *card = [self cardAtIndex:index];
   if (!card.matched) {
     if (card.chosen) {
       card.chosen = NO;
       [self.chosenCards removeObject:card];
-      self.lastCardFlipDescription = @"";
+      self.lastMoveDescription = [[NSAttributedString alloc] initWithString:@""];
     } else {
       self.score -= COST_TO_CHOOSE;
       card.chosen = YES;
       
       if (self.chosenCards.count == 0) {
         [self.chosenCards addObject:card];
-        self.lastCardFlipDescription = card.contents;
+        self.lastMoveDescription = card.contents;
         return;
       }
       
@@ -91,9 +108,9 @@ constexpr int COST_TO_CHOOSE = 1;
           for (Card *chosenCard in self.chosenCards) {
             NSMutableArray<Card *> *cardsToCompare = [@[card] mutableCopy];
             
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"contents != %@",
+            auto predicate = [NSPredicate predicateWithFormat:@"contents != %@",
                                                                       chosenCard.contents];
-            NSArray<Card *> *otherCards = [self.chosenCards filteredArrayUsingPredicate:predicate];
+            auto otherCards = [self.chosenCards filteredArrayUsingPredicate:predicate];
             [cardsToCompare addObjectsFromArray:otherCards];
             MatchResult res = [chosenCard match:cardsToCompare];
             // Update match result if better match found
@@ -114,25 +131,43 @@ constexpr int COST_TO_CHOOSE = 1;
           for (Card * c in self.chosenCards) {
             c.matched = YES;
           }
-          NSString *description = @"Matched";
+          NSMutableAttributedString *descriptionString = [[[NSAttributedString alloc]
+                                                             initWithString: @"Matched"]
+                                                          mutableCopy];
           for (Card *c in matchResult.matches) {
-            description = [description stringByAppendingString:[NSString stringWithFormat:@" %@", c.contents]];
+            [descriptionString appendAttributedString:[[NSAttributedString alloc]
+                                                         initWithString:@" "]];
+            [descriptionString appendAttributedString:c.contents];
           }
-          description = [description stringByAppendingString:[NSString stringWithFormat:@" for %d points.", points]];
-          self.lastCardFlipDescription = description;
+          [descriptionString appendAttributedString:
+             [[NSAttributedString alloc] initWithString:
+                [NSString stringWithFormat:@" for %d points.", points]]];
+          [self.chosenCards addObject:card];
+          self.lastMoveDescription = descriptionString;
           [self.chosenCards removeAllObjects];
         } else { // No match
           self.score -= MISMATCH_PENALTY;
           Card *cardToUnchoose = self.chosenCards[self.chosenCards.count-1];
           cardToUnchoose.chosen = NO;
-          [self.chosenCards removeObject:cardToUnchoose];
           [self.chosenCards insertObject:card atIndex:0];
-          self.lastCardFlipDescription = [NSString stringWithFormat:@"No match! %d point penalty!",
-                                          MISMATCH_PENALTY];
+          NSMutableAttributedString *descriptionString = [[[NSAttributedString alloc]
+                                                           initWithAttributedString:
+                                                             card.contents] mutableCopy];
+          for (Card *c in self.chosenCards) {
+            if (c == card) continue;
+            [descriptionString appendAttributedString:[[NSAttributedString alloc]
+                                                         initWithString:@" "]];
+            [descriptionString appendAttributedString:c.contents];
+          }
+          [descriptionString appendAttributedString:
+             [[NSAttributedString alloc] initWithString:
+                [NSString stringWithFormat:@" don't match! %d point penalty!", MISMATCH_PENALTY]]];
+          self.lastMoveDescription = descriptionString;
+          [self.chosenCards removeObject:cardToUnchoose];
         }
       } else { // More cards can be flipped
         [self.chosenCards insertObject:card atIndex:0];
-        self.lastCardFlipDescription = card.contents;
+        self.lastMoveDescription = card.contents;
       }
     }
   }

@@ -7,6 +7,8 @@
 
 #import "PlayingCard.h"
 
+#import <UIKit/UIKit.h>
+
 @implementation PlayingCard
 
 @synthesize suit = _suit;
@@ -23,9 +25,17 @@
   return @[@"♠︎", @"♣︎", @"♥︎", @"♦︎"];
 }
 
-- (NSString *)contents {
-  NSArray *rankStrings = [PlayingCard rankStrings];
-  return [rankStrings[self.rank] stringByAppendingString:self.suit];
+- (NSAttributedString *)contents {
+  auto rankStrings = [PlayingCard rankStrings];
+  
+  auto textColor = ([self.suit isEqualToString:@"♥︎"] || [self.suit isEqualToString:@"♦︎"])
+                          ? UIColor.redColor : UIColor.blackColor;
+  
+  NSMutableDictionary *attributes = [@{NSForegroundColorAttributeName:textColor}
+                                      mutableCopy];
+  return [[NSAttributedString alloc] initWithString:[rankStrings[self.rank]
+                                                     stringByAppendingString:self.suit]
+                                         attributes:attributes];
 }
 
 - (void)setSuit:(NSString *)suit {

@@ -11,10 +11,10 @@
 
 @interface CardMatchingGame : NSObject
 
-enum GameMode : int {
+typedef enum {
   two = 2,
   three = 3
-};
+} GameMode;
 
 - (instancetype)initWithCardCount: (NSUInteger)count usingDeck:(Deck *)deck;
 - (void)chooseCardAtIndex: (NSUInteger)index;
@@ -22,7 +22,8 @@ enum GameMode : int {
 - (BOOL)startNewGameWithCardCount: (NSUInteger)count usingDeck: (Deck *)deck;
 
 @property (nonatomic, readonly) NSInteger score;
-@property (nonatomic) enum GameMode mode;
-@property (nonatomic, readonly) NSString *lastCardFlipDescription;
+@property (nonatomic) GameMode mode;
+@property (nonatomic, readonly) NSAttributedString *lastMoveDescription;
+@property (nonatomic) NSMutableAttributedString *moveHistory;
 
 @end

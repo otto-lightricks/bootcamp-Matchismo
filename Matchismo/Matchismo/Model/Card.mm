@@ -14,7 +14,7 @@
   res.score = 0;
   res.matches = [[NSMutableArray alloc] init];
   for (Card *card in otherCards) {
-    if ([card.contents isEqualToString:self.contents]) {
+    if ([card.contents isEqualToAttributedString:self.contents]) {
       res.score++;
       [res.matches addObject:card];
     }

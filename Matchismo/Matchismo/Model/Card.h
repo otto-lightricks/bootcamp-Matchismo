@@ -14,7 +14,7 @@ struct MatchResult {
   NSMutableArray<Card *> *matches;
 };
 
-@property (strong, nonatomic) NSString *contents;
+@property (strong, nonatomic) NSAttributedString *contents;
 @property (nonatomic) BOOL chosen;
 @property (nonatomic) BOOL matched;
 
