@@ -7,12 +7,18 @@
 
 #import "Card.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface PlayingCard : Card
 
-@property (strong, nonatomic) NSString *suit;
-@property (nonatomic) NSUInteger rank;
+@property (readonly, nonatomic) NSString *suit;
+@property (readonly, nonatomic) NSUInteger rank;
 
 + (NSArray *)validSuits;
 + (NSUInteger)maxRank;
 
+- (instancetype)initWithSuit:(NSString *)suit rank:(NSUInteger)rank;
+
 @end
+
+NS_ASSUME_NONNULL_END

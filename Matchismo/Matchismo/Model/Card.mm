@@ -7,6 +7,8 @@
 
 #import "Card.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation Card
 
 - (MatchResult)match:(NSArray<Card *> *)otherCards {
@@ -23,3 +25,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
