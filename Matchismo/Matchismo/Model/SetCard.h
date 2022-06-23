@@ -9,20 +9,27 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SetCard : Card
+NS_ASSUME_NONNULL_BEGIN
 
-typedef enum {
+typedef NS_ENUM(NSInteger, SetCardShading) {
   setCardShadingOpen,
   setCardShadingSolid,
   setCardShadingStriped,
   setCardShadingCount
-} SetCardShading;
+};
 
-@property (nonatomic) NSUInteger noOfShapes;
-@property (nonatomic) NSString *shape;
-@property (nonatomic) SetCardShading shading;
-@property (nonatomic) UIColor *color;
-@property (nonatomic) NSMutableDictionary *attributes;
+@interface SetCard : Card
 
+@property (readonly, nonatomic) NSUInteger numberOfShapes;
+@property (readonly, nonatomic) NSString *shape;
+@property (readonly, nonatomic) SetCardShading shading;
+@property (readonly, nonatomic) UIColor *color;
+
+- (instancetype)initWithNumberOfShapes:(NSUInteger)numberOfShapes
+                                 shape:(NSString *)shape
+                               shading:(SetCardShading)shading
+                                 color:(UIColor *)color;
 
 @end
+
+NS_ASSUME_NONNULL_END

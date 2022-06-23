@@ -1,17 +1,27 @@
 //
-//  CardGameViewController.m
+//  AbstractCardGameViewController.m
 //  Matchismo
 //
 //  Created by Otto Olkkonen on 08/06/2022.
 //
 
-#import "CardGameViewController.h"
+#import "AbstractCardGameViewController.h"
 
 #import "Card.h"
 #import "CardMatchingGame.h"
 #import "HistoryViewController.h"
 
-@implementation CardGameViewController
+NS_ASSUME_NONNULL_BEGIN
+
+@interface AbstractCardGameViewController()
+
+@property (readwrite, nonatomic) Deck* deck;
+@property (readwrite, nonatomic) CardMatchingGame* game;
+@property (nonatomic) NSMutableAttributedString *moveHistory;
+
+@end
+
+@implementation AbstractCardGameViewController
 
 - (Deck *)deck {
   if (!_deck) {
@@ -22,17 +32,25 @@
 
 - (CardMatchingGame *)game {
   if (!_game) {
-    _game = [self initializeGame];
+    _game = [self makeGame];
   }
   return _game;
 }
 
-- (CardMatchingGame *)initializeGame {
+- (NSMutableAttributedString *)moveHistory {
+  if (!_moveHistory) {
+    _moveHistory = [[NSMutableAttributedString alloc] init];
+  }
+  return _moveHistory;
+}
+
+- (CardMatchingGame *)makeGame {
   return [[CardMatchingGame alloc] initWithCardCount:self.cardsCollection.count
                                            usingDeck:[self createDeck]];
 }
 
 - (Deck *)createDeck {
+  NSAssert(NO, @"Abstract method, should not be called directly");
   return nil;
 }
 
@@ -55,9 +73,9 @@
 
 - (IBAction)touchCardButton:(UIButton *)sender {
   [self handleCardSelectionAtIndex: [self.cardsCollection indexOfObject:sender]];
-  if (self.gameModeControl.enabled) {
-    [self.gameModeControl setEnabled:NO];
-  }
+  [self.moveHistory appendAttributedString:self.descriptionLabel.attributedText];
+  [self.moveHistory appendAttributedString:
+     [[NSMutableAttributedString alloc] initWithString:@"\r"]];
 }
 
 - (void)handleCardSelectionAtIndex:(NSUInteger)index {
@@ -67,31 +85,21 @@
 
 - (IBAction)newGameButtonClicked:(id)sender {
   [self startNewGame];
-  [self.gameModeControl setEnabled:YES];
+  self.moveHistory = [[NSMutableAttributedString alloc] initWithString:@""];
 }
 
 - (void)startNewGame {
   return;
 }
 
-- (IBAction)modeChanged:(UISegmentedControl *)sender {
-  switch (sender.selectedSegmentIndex) {
-    case 0:
-      self.game.mode = GameMode::two;
-      break;
-    case 1:
-      self.game.mode = GameMode::three;
-      break;
-  };
-}
-
-- (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(nullable id)sender {
   if ([segue.identifier isEqualToString: @"showHistory"]) {
     if ([segue.destinationViewController isKindOfClass: [HistoryViewController class]]) {
       const auto hVC = (HistoryViewController *)segue.destinationViewController;
-      hVC.historyText = self.game.moveHistory;
-    }
+      [hVC setAttributedText:self.moveHistory];    }
   }
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

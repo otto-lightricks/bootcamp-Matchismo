@@ -7,15 +7,26 @@
 
 #import "HistoryViewController.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface HistoryViewController()
+
+@property (nonatomic) NSAttributedString *historyText;
 @property (weak, nonatomic) IBOutlet UITextView *textView;
+
 @end
 
 @implementation HistoryViewController
 
 - (void) setHistoryText:(NSAttributedString *)historyText {
   _historyText = historyText;
-  if (self.view.window) [self updateUI];
+  if (self.isViewLoaded && self.view.window) {
+    [self updateUI];
+  }
+}
+
+- (void) setAttributedText:(NSAttributedString *)text {
+  self.historyText = text;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -44,3 +55,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

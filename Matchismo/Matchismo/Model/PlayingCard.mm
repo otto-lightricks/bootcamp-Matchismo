@@ -9,11 +9,28 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface PlayingCard()
+
+@property (readwrite, nonatomic) NSString *suit;
+@property (readwrite, nonatomic) NSUInteger rank;
+
+@end
+
 @implementation PlayingCard
 
 @synthesize suit = _suit;
 
-+ (NSArray *)rankStrings {
+- (instancetype)initWithSuit:(NSString *)suit rank:(NSUInteger)rank {
+  if (self = [super init]) {
+    self.suit = suit;
+    self.rank = rank;
+  }
+  return self;
+}
+
++ (NSArray<NSString *> *)rankStrings {
   return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"];
 }
 
@@ -21,21 +38,12 @@
   return [self rankStrings].count - 1;
 }
 
-+ (NSArray *)validSuits {
++ (NSArray<NSString *> *)validSuits {
   return @[@"♠︎", @"♣︎", @"♥︎", @"♦︎"];
 }
 
-- (NSAttributedString *)contents {
-  auto rankStrings = [PlayingCard rankStrings];
-  
-  auto textColor = ([self.suit isEqualToString:@"♥︎"] || [self.suit isEqualToString:@"♦︎"])
-                          ? UIColor.redColor : UIColor.blackColor;
-  
-  NSMutableDictionary *attributes = [@{NSForegroundColorAttributeName:textColor}
-                                      mutableCopy];
-  return [[NSAttributedString alloc] initWithString:[rankStrings[self.rank]
-                                                     stringByAppendingString:self.suit]
-                                         attributes:attributes];
+- (NSString *)contents {
+  return [[PlayingCard rankStrings][self.rank] stringByAppendingString:self.suit];
 }
 
 - (void)setSuit:(NSString *)suit {
@@ -73,3 +81,4 @@
 
 @end
 
+NS_ASSUME_NONNULL_END

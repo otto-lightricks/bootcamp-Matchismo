@@ -7,23 +7,34 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSInteger, GameMode) {
+  twoCard = 2,
+  threeCard = 3
+};
+
+typedef NS_ENUM(NSInteger, GamePoints) {
+  COST_TO_CHOOSE = 1,
+  MISMATCH_PENALTY = 2,
+  THREE_TWO_MATCH_BONUS = 3,
+  TWO_MATCH_BONUS = 4,
+  THREE_THREE_MATCH_BONUS = 5
+};
+
 @class Card, Deck;
 
 @interface CardMatchingGame : NSObject
-
-typedef enum {
-  two = 2,
-  three = 3
-} GameMode;
 
 - (instancetype)initWithCardCount: (NSUInteger)count usingDeck:(Deck *)deck;
 - (void)chooseCardAtIndex: (NSUInteger)index;
 - (Card *)cardAtIndex: (NSUInteger)index;
 - (BOOL)startNewGameWithCardCount: (NSUInteger)count usingDeck: (Deck *)deck;
 
-@property (nonatomic, readonly) NSInteger score;
+@property (readonly, nonatomic) NSInteger score;
 @property (nonatomic) GameMode mode;
-@property (nonatomic, readonly) NSAttributedString *lastMoveDescription;
-@property (nonatomic) NSMutableAttributedString *moveHistory;
+@property (readonly, nonatomic) NSString *lastMoveDescription;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -7,6 +7,8 @@
 
 #import "Card.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation Card
 
 - (MatchResult)match:(NSArray<Card *> *)otherCards {
@@ -14,7 +16,7 @@
   res.score = 0;
   res.matches = [[NSMutableArray alloc] init];
   for (Card *card in otherCards) {
-    if ([card.contents isEqualToAttributedString:self.contents]) {
+    if ([card.contents isEqualToString:self.contents]) {
       res.score++;
       [res.matches addObject:card];
     }
@@ -23,3 +25,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

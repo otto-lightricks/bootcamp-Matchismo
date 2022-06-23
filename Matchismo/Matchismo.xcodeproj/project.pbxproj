@@ -12,7 +12,7 @@
 		27277AFE285C77F9004DDCE8 /* PlayingCardGameViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27277AFD285C77F9004DDCE8 /* PlayingCardGameViewController.mm */; };
 		27A76E612850AA79003BA2A1 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27A76E602850AA79003BA2A1 /* AppDelegate.mm */; };
 		27A76E642850AA79003BA2A1 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27A76E632850AA79003BA2A1 /* SceneDelegate.mm */; };
-		27A76E672850AA79003BA2A1 /* CardGameViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27A76E662850AA79003BA2A1 /* CardGameViewController.mm */; };
+		27A76E672850AA79003BA2A1 /* AbstractCardGameViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27A76E662850AA79003BA2A1 /* AbstractCardGameViewController.mm */; };
 		27A76E6A2850AA79003BA2A1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 27A76E682850AA79003BA2A1 /* Main.storyboard */; };
 		27A76E6C2850AA7A003BA2A1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27A76E6B2850AA7A003BA2A1 /* Assets.xcassets */; };
 		27A76E6F2850AA7A003BA2A1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 27A76E6D2850AA7A003BA2A1 /* LaunchScreen.storyboard */; };
@@ -38,8 +38,8 @@
 		27A76E602850AA79003BA2A1 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		27A76E622850AA79003BA2A1 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		27A76E632850AA79003BA2A1 /* SceneDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SceneDelegate.mm; sourceTree = "<group>"; };
-		27A76E652850AA79003BA2A1 /* CardGameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CardGameViewController.h; sourceTree = "<group>"; };
-		27A76E662850AA79003BA2A1 /* CardGameViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CardGameViewController.mm; sourceTree = "<group>"; };
+		27A76E652850AA79003BA2A1 /* AbstractCardGameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbstractCardGameViewController.h; sourceTree = "<group>"; };
+		27A76E662850AA79003BA2A1 /* AbstractCardGameViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AbstractCardGameViewController.mm; sourceTree = "<group>"; };
 		27A76E692850AA79003BA2A1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		27A76E6B2850AA7A003BA2A1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		27A76E6E2850AA7A003BA2A1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -91,17 +91,17 @@
 		27A76E5E2850AA79003BA2A1 /* Matchismo */ = {
 			isa = PBXGroup;
 			children = (
-				27A76E7B2850D313003BA2A1 /* Model */,
 				27A76E5F2850AA79003BA2A1 /* AppDelegate.h */,
 				27A76E602850AA79003BA2A1 /* AppDelegate.mm */,
+				27A76E6B2850AA7A003BA2A1 /* Assets.xcassets */,
+				27A76E792850D2F9003BA2A1 /* Controller */,
+				27A76E702850AA7A003BA2A1 /* Info.plist */,
+				27A76E6D2850AA7A003BA2A1 /* LaunchScreen.storyboard */,
+				27A76E712850AA7A003BA2A1 /* main.m */,
+				27A76E7B2850D313003BA2A1 /* Model */,
 				27A76E622850AA79003BA2A1 /* SceneDelegate.h */,
 				27A76E632850AA79003BA2A1 /* SceneDelegate.mm */,
-				27A76E792850D2F9003BA2A1 /* Controller */,
 				27A76E7A2850D30B003BA2A1 /* View */,
-				27A76E6B2850AA7A003BA2A1 /* Assets.xcassets */,
-				27A76E6D2850AA7A003BA2A1 /* LaunchScreen.storyboard */,
-				27A76E702850AA7A003BA2A1 /* Info.plist */,
-				27A76E712850AA7A003BA2A1 /* main.m */,
 			);
 			path = Matchismo;
 			sourceTree = "<group>";
@@ -109,8 +109,8 @@
 		27A76E792850D2F9003BA2A1 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				27A76E652850AA79003BA2A1 /* CardGameViewController.h */,
-				27A76E662850AA79003BA2A1 /* CardGameViewController.mm */,
+				27A76E652850AA79003BA2A1 /* AbstractCardGameViewController.h */,
+				27A76E662850AA79003BA2A1 /* AbstractCardGameViewController.mm */,
 				27277AF7285B285C004DDCE8 /* SetCardGameViewController.mm */,
 				27277AF9285B2872004DDCE8 /* SetCardGameViewController.h */,
 				27277AFA285B30BD004DDCE8 /* HistoryViewController.h */,
@@ -222,7 +222,7 @@
 			files = (
 				27A76E7D2850D336003BA2A1 /* Card.mm in Sources */,
 				27A76E862850E95E003BA2A1 /* PlayingCardDeck.mm in Sources */,
-				27A76E672850AA79003BA2A1 /* CardGameViewController.mm in Sources */,
+				27A76E672850AA79003BA2A1 /* AbstractCardGameViewController.mm in Sources */,
 				27DD9DD82859F191004BD162 /* SetCardDeck.mm in Sources */,
 				27277AFC285B30C9004DDCE8 /* HistoryViewController.mm in Sources */,
 				27D6D33A28536A5B0057CF14 /* CardMatchingGame.mm in Sources */,

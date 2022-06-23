@@ -7,79 +7,63 @@
 
 #include "SetCard.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface SetCard()
-- (BOOL)allSameNoOfShapes:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allDifferentNoOfShapes:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allSameShape:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allDifferentShape:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allSameShading:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allDifferentShading:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allSameColor:(NSArray<SetCard *> *)otherCards;
-- (BOOL)allDifferentColor:(NSArray<SetCard *> *)otherCards;
+
+@property (readwrite, nonatomic) NSUInteger numberOfShapes;
+@property (readwrite, nonatomic) NSString *shape;
+@property (readwrite, nonatomic) SetCardShading shading;
+@property (readwrite, nonatomic) UIColor *color;
+
 @end
 
 @implementation SetCard
 
-- (NSMutableDictionary *)attributes {
-  NSMutableDictionary *att = [@{NSForegroundColorAttributeName:self.color}
-                                     mutableCopy];
-  
-  switch (self.shading) {
-    case setCardShadingSolid:
-      att[NSStrokeWidthAttributeName] = @-5;
-      break;
-    case setCardShadingStriped:
-      att[NSStrokeWidthAttributeName] = @-5;
-      att[NSStrikethroughStyleAttributeName] = [NSNumber numberWithInt:
-                                                       NSUnderlineStyleDouble];
-      att[NSStrikethroughColorAttributeName] = UIColor.whiteColor;
-      break;
-    case setCardShadingOpen:
-      att[NSStrokeWidthAttributeName] = @5;
-      break;
-    default:
-      break;
+- (instancetype)initWithNumberOfShapes:(NSUInteger)numberOfShapes
+                                 shape:(NSString *)shape
+                               shading:(SetCardShading)shading
+                                 color:(UIColor *)color {
+  if (self = [super init]) {
+    self.numberOfShapes = numberOfShapes;
+    self.shape = shape;
+    self.shading = shading;
+    self.color = color;
   }
-  
-  return att;
+  return self;
 }
 
-- (NSAttributedString *)contents {
-
-  auto text = [NSString stringWithFormat:@"%llu %@",
-                 (long long)self.noOfShapes,
-                 self.shape];
-  NSMutableDictionary *attributes = [@{NSForegroundColorAttributeName:self.color}
-                                     mutableCopy];
-  auto *attributedString = [[NSMutableAttributedString alloc]
-                                                initWithString:text attributes:attributes];
-  const auto range = [[attributedString string] rangeOfString:self.shape];
-  [attributedString setAttributes:self.attributes range:range];
- 
-  return attributedString;
+- (NSString *)contents {
+  return [[NSString alloc] initWithFormat:@"%lu%@",
+          (unsigned long)self.numberOfShapes, self.shape];
 }
 
-- (BOOL)allSameNoOfShapes:(NSArray<SetCard *> *)otherCards {
+// Checks if all setcards have the same number of shapes
+- (BOOL)checkEqualNumberOfShapes:(NSArray<SetCard *> *)otherCards {
   for (SetCard *card in otherCards) {
-    if (card.noOfShapes != self.noOfShapes) {
+    if (card.numberOfShapes != self.numberOfShapes) {
       return NO;
     }
   }
   return YES;
 }
 
-- (BOOL)allDifferentNoOfShapes:(NSArray<SetCard *> *)otherCards {
-  NSMutableSet *set = [[[NSSet alloc] init] mutableCopy];
-  [set addObject:@(self.noOfShapes)];
+// Checks if all setcards have different number of shapes
+- (BOOL)checkDifferentNumberOfShapes:(NSArray<SetCard *> *)otherCards {
+  NSMutableSet<NSNumber *> *set = [[NSMutableSet alloc] init];
+  [set addObject:@(self.numberOfShapes)];
   for (SetCard *card in otherCards) {
-    if ([set containsObject:@(card.noOfShapes)]) {
+    if ([set containsObject:@(card.numberOfShapes)]) {
       return NO;
+    } else {
+      [set addObject:@(card.numberOfShapes)];
     }
   }
   return YES;
 }
 
-- (BOOL)allSameShape:(NSArray<SetCard *> *)otherCards {
+// Checks if all setcards have the same shapes
+- (BOOL)checkEqualShapes:(NSArray<SetCard *> *)otherCards {
   for (SetCard *card in otherCards) {
     if (card.shape != self.shape) {
       return NO;
@@ -88,18 +72,22 @@
   return YES;
 }
 
-- (BOOL)allDifferentShape:(NSArray<SetCard *> *)otherCards {
-  NSMutableSet *set = [[[NSSet alloc] init] mutableCopy];
+// Checks if all setcards have different shapes
+- (BOOL)checkDifferentShapes:(NSArray<SetCard *> *)otherCards {
+  NSMutableSet<NSString *> *set = [[NSMutableSet alloc] init];
   [set addObject:self.shape];
   for (SetCard *card in otherCards) {
     if ([set containsObject:card.shape]) {
       return NO;
+    } else {
+      [set addObject:card.shape];
     }
   }
   return YES;
 }
 
-- (BOOL)allSameShading:(NSArray<SetCard *> *)otherCards {
+// Checks if all setcards have the same shadings
+- (BOOL)checkEqualShadings:(NSArray<SetCard *> *)otherCards {
   for (SetCard *card in otherCards) {
     if (card.shading != self.shading) {
       return NO;
@@ -108,18 +96,22 @@
   return YES;
 }
 
-- (BOOL)allDifferentShading:(NSArray<SetCard *> *)otherCards {
-  NSMutableSet *set = [[[NSSet alloc] init] mutableCopy];
+// Checks if all setcards have different shadings
+- (BOOL)checkDifferentShadings:(NSArray<SetCard *> *)otherCards {
+  NSMutableSet<NSNumber *> *set = [[NSMutableSet alloc] init];
   [set addObject:@(self.shading)];
   for (SetCard *card in otherCards) {
     if ([set containsObject:@(card.shading)]) {
       return NO;
+    } else {
+      [set addObject:@(card.shading)];
     }
   }
   return YES;
 }
 
-- (BOOL)allSameColor:(NSArray<SetCard *> *)otherCards {
+// Checks if all setcards have the same colors
+- (BOOL)checkEqualColors:(NSArray<SetCard *> *)otherCards {
   for (SetCard *card in otherCards) {
     if (![card.color isEqual:self.color]) {
       return NO;
@@ -128,8 +120,9 @@
   return YES;
 }
 
-- (BOOL)allDifferentColor:(NSArray<SetCard *> *)otherCards {
-  NSMutableSet *set = [[[NSSet alloc] init] mutableCopy];
+// Checks if all setcards have different colors
+- (BOOL)checkDifferentColors:(NSArray<SetCard *> *)otherCards {
+  NSMutableSet<UIColor *> *set = [[NSMutableSet alloc] init];
   [set addObject:self.color];
   for (SetCard *card in otherCards) {
     if ([set containsObject:card.color]) {
@@ -141,19 +134,20 @@
   return YES;
 }
 
-- (MatchResult) match:(NSArray *)otherCards {
+- (MatchResult)match:(NSArray *)otherCards {
   MatchResult result;
-  const auto noOfShapesCondition = [self allSameNoOfShapes:otherCards]
-                                     || [self allDifferentNoOfShapes:otherCards];
-  const auto shapeCondition = [self allSameShape:otherCards]
-                                || [self allDifferentShape:otherCards];
-  const auto shadingCondition = [self allSameShading:otherCards]
-                                  || [self allDifferentShading:otherCards];
-  const auto colorCondition = [self allSameColor:otherCards]
-                                || [self allDifferentColor:otherCards];
-  result.score = (noOfShapesCondition && shapeCondition
+  result.score = 0;
+  const auto noOfShapesCondition = [self checkEqualNumberOfShapes:otherCards]
+                                     || [self checkDifferentNumberOfShapes:otherCards];
+  const auto shapeCondition = [self checkEqualShapes:otherCards]
+                                || [self checkDifferentShapes:otherCards];
+  const auto shadingCondition = [self checkEqualShadings:otherCards]
+                                  || [self checkDifferentShadings:otherCards];
+  const auto colorCondition = [self checkEqualColors:otherCards]
+                                || [self checkDifferentColors:otherCards];
+  BOOL isMatch = (noOfShapesCondition && shapeCondition
                    && shadingCondition && colorCondition);
-  if (result.score) {
+  if (isMatch) {
     result.score = 3;
     result.matches = [otherCards mutableCopy];
     [result.matches addObject:self];
@@ -163,3 +157,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

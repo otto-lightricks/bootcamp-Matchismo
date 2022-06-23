@@ -9,21 +9,39 @@
 
 #import "SetCard.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation SetCardDeck
 
-- (instancetype)initWithShapes:(NSArray *)shapes Colors:(NSArray *)colors {
+- (NSArray *)defaultShapes {
+  return @[@"●", @"■", @"▲"];
+}
+
+- (NSArray *)defaultColors {
+  return @[UIColor.redColor, UIColor.greenColor, UIColor.purpleColor];
+}
+
+- (instancetype)init {
+  return [self initWithShapes:[self defaultShapes] colors:[self defaultColors]];
+}
+
+- (instancetype)initWithShapes:(NSArray *)shapes colors:(NSArray *)colors {
   if (self = [super init]) {
-    if (shapes.count != 3 || colors.count != 3) return nil;
+    if (shapes.count != 3) {
+      shapes = [self defaultShapes];
+    }
+    if (colors.count != 3) {
+      colors = [self defaultColors];
+    }
     for (NSUInteger noOfShapes = 1; noOfShapes < 4; noOfShapes++) {
       for (NSString *shape in shapes) {
         for (UIColor *color in colors) {
           for (int shadingVal = 0; shadingVal < setCardShadingCount; shadingVal++) {
-            auto card = [[SetCard alloc] init];
-            card.noOfShapes = noOfShapes;
-            card.shape = shape;
-            card.color = color;
             SetCardShading shading = static_cast<SetCardShading>(shadingVal);
-            card.shading = shading;
+            auto card = [[SetCard alloc] initWithNumberOfShapes:noOfShapes
+                                                          shape:shape
+                                                        shading:shading
+                                                          color:color];
             [self addCard:card];
           }
         }
@@ -34,3 +52,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
