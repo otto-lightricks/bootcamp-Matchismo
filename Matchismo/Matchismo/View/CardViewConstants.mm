@@ -21,4 +21,11 @@ const float PIP_VOFFSET2_PERCENTAGE = 0.175;
 const float PIP_VOFFSET3_PERCENTAGE = 0.270;
 const float PIP_FONT_SCALE_FACTOR = 0.012;
 
+// Set Card
+const float SYMBOL_HEIGHT_SCALE_FACTOR = 0.2;
+const float SYMBOL_WIDTH_SCALE_FACTOR = 0.6;
+const float SYMBOL_GAP = 0.05;
+const float OVAL_CORNER_RADIUS = 8.0;
+const float SYMBOL_STRIPE_GAP = 4.0;
+
 NS_ASSUME_NONNULL_END

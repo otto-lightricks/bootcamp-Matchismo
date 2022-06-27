@@ -21,4 +21,11 @@ extern const float PIP_VOFFSET2_PERCENTAGE;
 extern const float PIP_VOFFSET3_PERCENTAGE;
 extern const float PIP_FONT_SCALE_FACTOR;
 
+// Set Card
+extern const float SYMBOL_HEIGHT_SCALE_FACTOR;
+extern const float SYMBOL_WIDTH_SCALE_FACTOR;
+extern const float SYMBOL_GAP;
+extern const float OVAL_CORNER_RADIUS;
+extern const float SYMBOL_STRIPE_GAP;
+
 NS_ASSUME_NONNULL_END
