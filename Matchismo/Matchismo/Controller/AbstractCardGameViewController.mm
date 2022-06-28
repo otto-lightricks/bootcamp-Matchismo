@@ -9,19 +9,55 @@
 
 #import "Card.h"
 #import "CardMatchingGame.h"
-#import "HistoryViewController.h"
+#import "CardView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AbstractCardGameViewController()
 
-@property (readwrite, nonatomic) Deck* deck;
-@property (readwrite, nonatomic) CardMatchingGame* game;
-@property (nonatomic) NSMutableAttributedString *moveHistory;
-
 @end
 
 @implementation AbstractCardGameViewController
+
+@synthesize numberOfCardsPerRow = _numberOfCardsPerRow;
+@synthesize deck = _deck;
+
+const CGFloat GAP_BETWEEN_CARDS = 8;
+const int DEFAULT_NUMBER_OF_CARDS_PER_ROW = 4;
+const int DEFAULT_NUMBER_OF_CARDS = 24;
+
+- (CGFloat)defaultGapBetweenCards {
+  return GAP_BETWEEN_CARDS;
+}
+
+- (int)defaultNumberOfCards {
+  return DEFAULT_NUMBER_OF_CARDS;
+}
+
+- (int)defaultNumberOfCardsPerRow {
+  return DEFAULT_NUMBER_OF_CARDS_PER_ROW;
+}
+
+- (void)setNumberOfCardsPerRow:(int)numberOfCardsPerRow {
+  _numberOfCardsPerRow = numberOfCardsPerRow;
+}
+
+-(int)numberOfCardsPerRow {
+  if (_numberOfCardsPerRow == 0) {
+    _numberOfCardsPerRow = DEFAULT_NUMBER_OF_CARDS_PER_ROW;
+  }
+  return _numberOfCardsPerRow;
+}
+
+- (CGFloat)cardWidth {
+  return (self.cardsView.bounds.size.width / self.numberOfCardsPerRow)
+         - ((self.numberOfCardsPerRow - 1) * self.defaultGapBetweenCards)
+         / self.numberOfCardsPerRow;
+}
+
+- (CGFloat)cardHeight {
+  return [self cardWidth] * 1.2;
+}
 
 - (Deck *)deck {
   if (!_deck) {
@@ -37,21 +73,19 @@ NS_ASSUME_NONNULL_BEGIN
   return _game;
 }
 
-- (NSMutableAttributedString *)moveHistory {
-  if (!_moveHistory) {
-    _moveHistory = [[NSMutableAttributedString alloc] init];
-  }
-  return _moveHistory;
-}
-
 - (CardMatchingGame *)makeGame {
-  return [[CardMatchingGame alloc] initWithCardCount:self.cardsCollection.count
-                                           usingDeck:[self createDeck]];
+  return nil;
 }
 
 - (Deck *)createDeck {
   NSAssert(NO, @"Abstract method, should not be called directly");
   return nil;
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.cardViews = [[NSMutableArray alloc] init];
+  [self setUpCards];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -67,37 +101,99 @@ NS_ASSUME_NONNULL_BEGIN
   [[self.navigationController navigationBar] setScrollEdgeAppearance:navBarAppeareance];
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  [self resizeCards];
+}
+
+-(void) setUpCards {
+  [self removeAllCardsFromView];
+  CGFloat xPos = 0;
+  CGFloat yPos = 0;
+  
+  for (int i = 1; i <= self.defaultNumberOfCards; i++) {
+    Card *card = [self.game cardAtIndex:i-1];
+    [self createCardViewToPoint:CGPointMake(xPos, yPos) withCard:card];
+    if (i % [self numberOfCardsPerRow] == 0) {
+      xPos = 0;
+      yPos += self.cardHeight + self.defaultGapBetweenCards;
+    } else {
+      xPos += self.cardWidth + self.defaultGapBetweenCards;
+    }
+  }
+}
+
+- (void)removeAllCardsFromView {
+  for (CardView *cardView in self.cardViews) {
+    [cardView removeFromSuperview];
+  }
+  [self.cardViews removeAllObjects];
+}
+
+- (void)findSmallestNumberOfCardsPerRow {
+  self.numberOfCardsPerRow = self.defaultNumberOfCardsPerRow;
+  int rows = ceil(self.cardViews.count / (double)self.numberOfCardsPerRow);
+  CGFloat maxY = rows * [self cardHeight] + (rows - 1) * self.defaultGapBetweenCards;
+  CGFloat cardsViewMaxY = self.cardsView.bounds.origin.y + self.cardsView.bounds.size.height;
+  while (maxY > cardsViewMaxY) {
+    ++self.numberOfCardsPerRow;
+    rows = ceil(self.cardViews.count / (double)self.numberOfCardsPerRow);
+    maxY = rows * [self cardHeight] + (rows - 1) * self.defaultGapBetweenCards;
+  }
+}
+
+- (void)resizeCards {
+  [self findSmallestNumberOfCardsPerRow];
+  CGFloat xPos = 0;
+  CGFloat yPos = 0;
+  for (int i = 1; i <= self.cardViews.count; i++) {
+    CardView *cardView = self.cardViews[i-1];
+    CGRect cardFrame = CGRectMake(xPos, yPos, [self cardWidth], [self cardHeight]);
+    [cardView setFrame:cardFrame];
+    if (i % self.numberOfCardsPerRow == 0) {
+      xPos = 0;
+      yPos += [self cardHeight] + self.defaultGapBetweenCards;
+    } else {
+      xPos += [self cardWidth] + self.defaultGapBetweenCards;
+    }
+  }
+}
+
+- (BOOL)cardsViewTooLarge {
+  CGFloat maxY = [self.cardViews lastObject].frame.origin.y + [self cardHeight];
+  CGFloat cardsViewMaxY = self.cardsView.bounds.origin.y + self.cardsView.bounds.size.height;
+  return maxY > cardsViewMaxY;
+}
+
 - (void)updateUI {
   return;
 }
 
-- (IBAction)touchCardButton:(UIButton *)sender {
-  [self handleCardSelectionAtIndex: [self.cardsCollection indexOfObject:sender]];
-  [self.moveHistory appendAttributedString:self.descriptionLabel.attributedText];
-  [self.moveHistory appendAttributedString:
-     [[NSMutableAttributedString alloc] initWithString:@"\r"]];
+- (void)handleCardSelection:(UITapGestureRecognizer *)recognizer {
+  CGPoint location = [recognizer locationInView:[recognizer.view superview]];
+  auto *touchedView = [self.cardsView hitTest:location withEvent:nil];
+  if ([touchedView isKindOfClass:[CardView class]]) {
+    auto index = [self.cardViews indexOfObject:(CardView *)touchedView];
+    if (index == NSNotFound) {
+      return;
+    }
+    [self.game chooseCardAtIndex:index];
+    [self updateUI];
+    [self resizeCards];
+  }
 }
 
-- (void)handleCardSelectionAtIndex:(NSUInteger)index {
-  [self.game chooseCardAtIndex:index];
-  [self updateUI];
-}
-
-- (IBAction)newGameButtonClicked:(id)sender {
+- (IBAction)newGameButtonClicked:(UIButton *)sender {
   [self startNewGame];
-  self.moveHistory = [[NSMutableAttributedString alloc] initWithString:@""];
 }
 
 - (void)startNewGame {
-  return;
-}
-
-- (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(nullable id)sender {
-  if ([segue.identifier isEqualToString: @"showHistory"]) {
-    if ([segue.destinationViewController isKindOfClass: [HistoryViewController class]]) {
-      const auto hVC = (HistoryViewController *)segue.destinationViewController;
-      [hVC setAttributedText:self.moveHistory];    }
-  }
+  self.deck = [self createDeck];
+  self.game = [self makeGame];
+  [self removeAllCardsFromView];
+  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
+  [self setUpCards];
+  [self resizeCards];
 }
 
 @end

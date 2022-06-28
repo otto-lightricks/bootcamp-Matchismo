@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface Deck()
 
-@property (strong, nonatomic) NSMutableArray<Card *> *cards;
+@property (nonatomic) NSMutableArray<Card *> *cards;
 
 @end
 

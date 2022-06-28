@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CardMatchingGame()
 
 @property (readwrite, nonatomic) NSInteger score;
-@property (readwrite, nonatomic) NSString *lastMoveDescription;
 @property (nonatomic) NSMutableArray<Card *> *cards;
 @property (nonatomic) NSMutableArray<Card *> *chosenCards;
 
@@ -35,10 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
     _chosenCards = [[NSMutableArray<Card *> alloc] init];
   }
   return _chosenCards;
-}
-
-- (void)setLastMoveDescription:(NSString *)lastMoveDescription {
-  _lastMoveDescription = lastMoveDescription;
 }
 
 - (instancetype)initWithCardCount: (NSUInteger)count usingDeck:(Deck *)deck {
@@ -70,6 +65,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (Card *)cardAtIndex: (NSUInteger)index {
   return (index < self.cards.count) ? self.cards[index] : nil;
+}
+
+- (void)addCard:(Card *)card {
+  [self.cards addObject:card];
+}
+
+- (void)removeCard:(Card *)card {
+  [self.cards removeObject:card];
 }
 
 - (MatchResult)checkForMatch {
@@ -105,12 +108,6 @@ NS_ASSUME_NONNULL_BEGIN
   for (Card *card in self.chosenCards) {
     card.matched = YES;
   }
-  NSMutableString *descriptionString = [[NSMutableString alloc] initWithString:@"Matched"];
-  for (Card *c in matchResult.matches) {
-    [descriptionString appendFormat:@" %@", c.contents];
-  }
-  [descriptionString appendFormat:@" for %d points.", points];
-  self.lastMoveDescription = descriptionString;
   [self.chosenCards removeAllObjects];
 }
 
@@ -118,12 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
   self.score -= MISMATCH_PENALTY;
   Card *cardToUnchoose = self.chosenCards[self.chosenCards.count-1];
   cardToUnchoose.chosen = NO;
-  NSString *descriptionString = @"";
-  for (Card *c in self.chosenCards) {
-    descriptionString = [descriptionString stringByAppendingFormat:@"%@", [c.contents stringByAppendingString:@" "]];
-  }
-  descriptionString = [descriptionString stringByAppendingFormat:@"don't match! %ld point penalty!", (long)MISMATCH_PENALTY];
-  self.lastMoveDescription = descriptionString;
   [self.chosenCards removeObject:cardToUnchoose];
 }
 
@@ -133,14 +124,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (card.chosen) {
       card.chosen = NO;
       [self.chosenCards removeObject:card];
-      self.lastMoveDescription = @"";
     } else {
       self.score -= COST_TO_CHOOSE;
       card.chosen = YES;
       
       if (self.chosenCards.count == 0) {
         [self.chosenCards addObject:card];
-        self.lastMoveDescription = card.contents;
         return;
       }
       [self.chosenCards insertObject:card atIndex:0];
@@ -153,8 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
         } else { // No match
           [self handleMismatch];
         }
-      } else { // More cards can be flipped
-        self.lastMoveDescription = card.contents;
       }
     }
   }

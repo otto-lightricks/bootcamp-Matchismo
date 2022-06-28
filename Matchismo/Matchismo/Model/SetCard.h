@@ -24,15 +24,16 @@ typedef NS_ENUM(NSInteger, SetCardShape) {
   setCardShapeSquiggle,
   setCardShapeCount
 };
+
 @interface SetCard : Card
 
 @property (readonly, nonatomic) NSUInteger numberOfShapes;
-@property (readonly, nonatomic) NSString *shape;
+@property (readonly, nonatomic) SetCardShape shape;
 @property (readonly, nonatomic) SetCardShading shading;
 @property (readonly, nonatomic) UIColor *color;
 
 - (instancetype)initWithNumberOfShapes:(NSUInteger)numberOfShapes
-                                 shape:(NSString *)shape
+                                 shape:(SetCardShape)shape
                                shading:(SetCardShading)shading
                                  color:(UIColor *)color;
 

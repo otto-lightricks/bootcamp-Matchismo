@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SetCard()
 
 @property (readwrite, nonatomic) NSUInteger numberOfShapes;
-@property (readwrite, nonatomic) NSString *shape;
+@property (readwrite, nonatomic) SetCardShape shape;
 @property (readwrite, nonatomic) SetCardShading shading;
 @property (readwrite, nonatomic) UIColor *color;
 
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation SetCard
 
 - (instancetype)initWithNumberOfShapes:(NSUInteger)numberOfShapes
-                                 shape:(NSString *)shape
+                                 shape:(SetCardShape)shape
                                shading:(SetCardShading)shading
                                  color:(UIColor *)color {
   if (self = [super init]) {
@@ -34,8 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)contents {
-  return [[NSString alloc] initWithFormat:@"%lu%@",
-          (unsigned long)self.numberOfShapes, self.shape];
+  return nil;
 }
 
 // Checks if all setcards have the same number of shapes
@@ -74,13 +73,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Checks if all setcards have different shapes
 - (BOOL)checkDifferentShapes:(NSArray<SetCard *> *)otherCards {
-  NSMutableSet<NSString *> *set = [[NSMutableSet alloc] init];
-  [set addObject:self.shape];
+  NSMutableSet<NSNumber *> *set = [[NSMutableSet alloc] init];
+  [set addObject:@(self.shape)];
   for (SetCard *card in otherCards) {
-    if ([set containsObject:card.shape]) {
+    if ([set containsObject:@(card.shape)]) {
       return NO;
     } else {
-      [set addObject:card.shape];
+      [set addObject:@(card.shape)];
     }
   }
   return YES;

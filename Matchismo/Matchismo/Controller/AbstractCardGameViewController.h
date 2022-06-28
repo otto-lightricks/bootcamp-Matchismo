@@ -9,20 +9,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CardMatchingGame, Deck;
+@class Card, CardMatchingGame, CardView, Deck;
 
 @interface AbstractCardGameViewController : UIViewController
 
-@property (readonly, nonatomic) Deck *deck;
-@property (readonly, nonatomic) CardMatchingGame *game;
+@property (nonatomic) Deck *deck;
+@property (nonatomic) CardMatchingGame *game;
+@property (nonatomic) NSMutableArray<CardView *>* cardViews;
+@property (readonly, nonatomic) CGFloat defaultGapBetweenCards;
+@property (readonly, nonatomic) int defaultNumberOfCardsPerRow;
+@property (readonly, nonatomic) int defaultNumberOfCards;
+@property (nonatomic) int numberOfCardsPerRow;
+@property (readonly, nonatomic) CGFloat cardWidth;
+@property (readonly, nonatomic) CGFloat cardHeight;
 @property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
-@property (nonatomic) IBOutletCollection(UIButton) NSArray *cardsCollection;
-@property (weak, nonatomic) IBOutlet UILabel *descriptionLabel;
+@property (weak, nonatomic) IBOutlet UIView *cardsView;
 
 - (Deck *)createDeck;
 - (void)startNewGame;
+- (void)setUpCards;
+- (void)resizeCards;
+- (BOOL)cardsViewTooLarge;
 - (void)updateUI;
-- (void)handleCardSelectionAtIndex:(NSUInteger)index;
+- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card;
 
 @end
 

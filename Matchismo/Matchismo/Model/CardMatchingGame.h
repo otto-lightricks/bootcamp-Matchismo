@@ -30,10 +30,11 @@ typedef NS_ENUM(NSInteger, GamePoints) {
 - (void)chooseCardAtIndex: (NSUInteger)index;
 - (Card *)cardAtIndex: (NSUInteger)index;
 - (BOOL)startNewGameWithCardCount: (NSUInteger)count usingDeck: (Deck *)deck;
+- (void)addCard:(Card *)card;
+- (void)removeCard:(Card *)card;
 
 @property (readonly, nonatomic) NSInteger score;
 @property (nonatomic) GameMode mode;
-@property (readonly, nonatomic) NSString *lastMoveDescription;
 
 @end
 

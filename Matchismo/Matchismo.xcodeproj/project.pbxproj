@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		27277AF8285B285C004DDCE8 /* SetCardGameViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27277AF7285B285C004DDCE8 /* SetCardGameViewController.mm */; };
-		27277AFC285B30C9004DDCE8 /* HistoryViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27277AFB285B30C9004DDCE8 /* HistoryViewController.mm */; };
 		27277AFE285C77F9004DDCE8 /* PlayingCardGameViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27277AFD285C77F9004DDCE8 /* PlayingCardGameViewController.mm */; };
 		27277B042860CB46004DDCE8 /* PlayingCardView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27277B032860CB46004DDCE8 /* PlayingCardView.mm */; };
 		27642FEE286205780090D71E /* SetCardView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27642FED286205770090D71E /* SetCardView.mm */; };
@@ -33,8 +32,6 @@
 /* Begin PBXFileReference section */
 		27277AF7285B285C004DDCE8 /* SetCardGameViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SetCardGameViewController.mm; sourceTree = "<group>"; };
 		27277AF9285B2872004DDCE8 /* SetCardGameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SetCardGameViewController.h; sourceTree = "<group>"; };
-		27277AFA285B30BD004DDCE8 /* HistoryViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HistoryViewController.h; sourceTree = "<group>"; };
-		27277AFB285B30C9004DDCE8 /* HistoryViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = HistoryViewController.mm; sourceTree = "<group>"; };
 		27277AFD285C77F9004DDCE8 /* PlayingCardGameViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlayingCardGameViewController.mm; sourceTree = "<group>"; };
 		27277AFF285C780B004DDCE8 /* PlayingCardGameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayingCardGameViewController.h; sourceTree = "<group>"; };
 		27277B022860CB46004DDCE8 /* PlayingCardView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PlayingCardView.h; path = Matchismo/View/PlayingCardView.h; sourceTree = SOURCE_ROOT; };
@@ -125,8 +122,6 @@
 				27A76E662850AA79003BA2A1 /* AbstractCardGameViewController.mm */,
 				27277AF7285B285C004DDCE8 /* SetCardGameViewController.mm */,
 				27277AF9285B2872004DDCE8 /* SetCardGameViewController.h */,
-				27277AFA285B30BD004DDCE8 /* HistoryViewController.h */,
-				27277AFB285B30C9004DDCE8 /* HistoryViewController.mm */,
 				27277AFD285C77F9004DDCE8 /* PlayingCardGameViewController.mm */,
 				27277AFF285C780B004DDCE8 /* PlayingCardGameViewController.h */,
 			);
@@ -245,7 +240,6 @@
 				27A76E672850AA79003BA2A1 /* AbstractCardGameViewController.mm in Sources */,
 				27DD9DD82859F191004BD162 /* SetCardDeck.mm in Sources */,
 				27277B042860CB46004DDCE8 /* PlayingCardView.mm in Sources */,
-				27277AFC285B30C9004DDCE8 /* HistoryViewController.mm in Sources */,
 				27D6D33A28536A5B0057CF14 /* CardMatchingGame.mm in Sources */,
 				27DD9DD62859EF37004BD162 /* SetCard.mm in Sources */,
 				27277AFE285C77F9004DDCE8 /* PlayingCardGameViewController.mm in Sources */,

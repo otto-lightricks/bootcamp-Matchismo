@@ -21,6 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
   [self setup];
 }
 
+-(instancetype)initWithFrame:(CGRect)frame {
+  if (self = [super initWithFrame:frame]) {
+    [self setup];
+  }
+  return self;
+}
+
 - (void)setup {
   self.backgroundColor = nil;
   self.opaque = NO;

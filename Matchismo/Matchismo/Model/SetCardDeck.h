@@ -11,8 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SetCardDeck : Deck
 
-- (instancetype)initWithShapes:(NSArray *)shapes
-                        colors:(NSArray *)colors NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithColors:(NSArray *)colors NS_DESIGNATED_INITIALIZER;
 
 @end
 

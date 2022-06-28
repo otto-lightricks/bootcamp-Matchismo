@@ -8,9 +8,10 @@
 #import "PlayingCardGameViewController.h"
 
 #import "CardMatchingGame.h"
-#import "HistoryViewController.h"
+#import "CardViewConstants.h"
 #import "PlayingCard.h"
 #import "PlayingCardDeck.h"
+#import "PlayingCardView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,114 +27,58 @@ NS_ASSUME_NONNULL_BEGIN
   return [[PlayingCardDeck alloc] init];
 }
 
+- (CardMatchingGame *)makeGame {
+  return [[CardMatchingGame alloc] initWithCardCount:[self defaultNumberOfCards]
+                                           usingDeck:[self createDeck]];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-  for (UIButton *cardButton in self.cardsCollection) {
-    [cardButton.titleLabel setLineBreakMode:NSLineBreakByClipping];
-    [cardButton.titleLabel setNumberOfLines:1];
-    [cardButton.titleLabel setAdjustsFontSizeToFitWidth:YES];
-    [cardButton.titleLabel setFont:[UIFont systemFontOfSize:20]];
-  }
   self.game.mode = self.gameModeControl.selectedSegmentIndex == 0
                     ? GameMode::twoCard : GameMode::threeCard;
 }
 
-- (void)handleCardSelectionAtIndex:(NSUInteger)index {
-  [self.game chooseCardAtIndex:index];
-  [self updateUI];
-  [self.gameModeControl setEnabled:NO];
-}
-
-- (void)updateMoveDescriptionLabel {
-  NSString *moveDescription = self.game.lastMoveDescription;
-  
-  auto heartsAndDiamondsPattern = @"[0-9JKQA]+[♥︎♦︎]";
-  auto spadesAndClubsPattern = @"[0-9JKQA]+[♠︎♣︎]";
-  
-  auto heartsAndDiamondsRegex = [NSRegularExpression
-                                  regularExpressionWithPattern:heartsAndDiamondsPattern
-                                                       options:0
-                                                         error:nil];
-  auto spadesAndClubsRegex = [NSRegularExpression
-                               regularExpressionWithPattern:spadesAndClubsPattern
-                                                    options:0
-                                                      error:nil];
-
-  auto textRange = NSMakeRange(0, moveDescription.length);
-  auto heartsAndDiamondsMatches = [heartsAndDiamondsRegex matchesInString:moveDescription
-                                                                  options:0
-                                                                    range:textRange];
-  auto spadesAndClubsMatches = [spadesAndClubsRegex matchesInString:moveDescription
-                                                            options:0
-                                                              range:textRange];
-  
-  auto *redColorAttribute = @{NSForegroundColorAttributeName : UIColor.redColor};
-  auto *blackColorAttribute = @{NSForegroundColorAttributeName : UIColor.blackColor};
-  auto attributedDescription = [[NSMutableAttributedString alloc] initWithString:moveDescription];
-  
-  for (NSTextCheckingResult *res in heartsAndDiamondsMatches) {
-    [attributedDescription addAttributes:redColorAttribute range:res.range];
+- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card {
+  if (![card isKindOfClass:[PlayingCard class]]) {
+    return;
   }
+  PlayingCard *playingCard = (PlayingCard *)card;
+  CGRect cardFrame = CGRectMake(point.x, point.y, self.cardWidth, self.cardHeight);
+  auto playingCardView = [[PlayingCardView alloc] initWithFrame:cardFrame];
+  playingCardView.suit = playingCard.suit;
+  playingCardView.rank = playingCard.rank;
+  playingCardView.faceUp = NO;
   
-  for (NSTextCheckingResult *res in spadesAndClubsMatches) {
-    [attributedDescription addAttributes:blackColorAttribute range:res.range];
-  }
+  UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
+                                          initWithTarget:self
+                                                  action:@selector(handleCardSelection:)];
+  [playingCardView addGestureRecognizer:tapRecognizer];
   
-  self.descriptionLabel.attributedText = attributedDescription;
+  [self.cardsView addSubview:playingCardView];
+  [self.cardViews addObject:playingCardView];
 }
 
 - (void)updateUI {
-  for (UIButton *cardButton in self.cardsCollection) {
-    auto cardButtonIndex = [self.cardsCollection indexOfObject:cardButton];
-    Card *card = [self.game cardAtIndex:cardButtonIndex];
-    if ([card isKindOfClass:[PlayingCard class]]) {
-      auto playingCard = (PlayingCard *)card;
-      auto attributedTitle = [[NSAttributedString alloc]
-                                initWithString:[self titleForCard:card]
-                                    attributes:@{NSForegroundColorAttributeName
-                                                  : [self colorForCard:playingCard]}];
-      [cardButton setAttributedTitle:attributedTitle forState:UIControlStateNormal];
+  int i = 0;
+  while (i < self.cardViews.count) {
+    if (![self.cardViews[i] isKindOfClass:[PlayingCardView class]]) {
+      continue;
     }
-    [cardButton setBackgroundImage:[self backgroundImageForCard:card]
-                          forState:UIControlStateNormal];
-    [cardButton setEnabled:!card.matched];
+    PlayingCardView *playingCardView = (PlayingCardView *)self.cardViews[i];
+    auto *card = [self.game cardAtIndex:i];
+    if (card.matched) {
+      [self.cardViews[i] setAlpha:0.7];
+    }
+    playingCardView.faceUp = card.chosen;
+    i++;
   }
   self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
-  [self updateMoveDescriptionLabel];
-}
-
-- (NSString *)titleForCard: (Card *)card {
-  return card.chosen ? card.contents : @"";
-}
-
-- (UIColor *)colorForCard: (PlayingCard *)card {
-  return ([card.suit isEqualToString:@"♥︎"] || [card.suit isEqualToString:@"♦︎"])
-           ? UIColor.redColor : UIColor.blackColor;
-}
-
-- (UIImage *)backgroundImageForCard: (Card *)card {
-  return [UIImage imageNamed:card.chosen ? @"cardfront" : @"cardback"];
+  [self.gameModeControl setEnabled:NO];
 }
 
 - (void)startNewGame {
-  if (![self.game startNewGameWithCardCount:self.cardsCollection.count
-                                  usingDeck:[self createDeck]]) {
-    return;
-  }
-  [self resetCardButtons];
-  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
-  self.descriptionLabel.text = @"";
+  [super startNewGame];
   [self.gameModeControl setEnabled:YES];
-}
-
-- (void)resetCardButtons {
-  for (UIButton *cardButton in self.cardsCollection) {
-    [cardButton setBackgroundImage:[UIImage imageNamed: @"cardback"]
-                          forState:UIControlStateNormal];
-    [cardButton setEnabled:YES];
-    [cardButton setAttributedTitle:[[NSAttributedString alloc] initWithString:@""]
-                          forState:UIControlStateNormal];
-  }
 }
 
 - (IBAction)modeChanged:(UISegmentedControl *)sender {
