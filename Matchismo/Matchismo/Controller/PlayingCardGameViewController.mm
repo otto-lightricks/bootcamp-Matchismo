@@ -38,24 +38,17 @@ NS_ASSUME_NONNULL_BEGIN
                     ? GameMode::twoCard : GameMode::threeCard;
 }
 
-- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card {
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card {
   if (![card isKindOfClass:[PlayingCard class]]) {
-    return;
+    return [[CardView alloc] initWithFrame:frame];
   }
   PlayingCard *playingCard = (PlayingCard *)card;
-  CGRect cardFrame = CGRectMake(point.x, point.y, self.cardWidth, self.cardHeight);
-  auto playingCardView = [[PlayingCardView alloc] initWithFrame:cardFrame];
+  auto playingCardView = [[PlayingCardView alloc] initWithFrame:frame];
   playingCardView.suit = playingCard.suit;
   playingCardView.rank = playingCard.rank;
   playingCardView.faceUp = NO;
   
-  UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
-                                          initWithTarget:self
-                                                  action:@selector(handleCardSelection:)];
-  [playingCardView addGestureRecognizer:tapRecognizer];
-  
-  [self.cardsView addSubview:playingCardView];
-  [self.cardViews addObject:playingCardView];
+  return playingCardView;
 }
 
 - (void)updateUI {
@@ -68,12 +61,34 @@ NS_ASSUME_NONNULL_BEGIN
     auto *card = [self.game cardAtIndex:i];
     if (card.matched) {
       [self.cardViews[i] setAlpha:0.7];
+    } else if (!card.chosen && playingCardView.faceUp) {
+      [UIView transitionWithView:playingCardView
+                        duration:0.5
+                         options:UIViewAnimationOptionTransitionFlipFromRight
+                      animations:^{
+                        playingCardView.faceUp = NO;
+                      }
+                      completion:nil];
     }
-    playingCardView.faceUp = card.chosen;
     i++;
   }
   self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
   [self.gameModeControl setEnabled:NO];
+}
+
+- (void)handleCardSelectionAtIndex:(int)index {
+  if ([self.cardViews[index] isKindOfClass:[PlayingCardView class]]) {
+    PlayingCardView *playingCardView = (PlayingCardView *)self.cardViews[index];
+    [UIView transitionWithView:playingCardView
+                      duration:0.5
+                       options:UIViewAnimationOptionTransitionFlipFromLeft
+                    animations:^{
+                      playingCardView.faceUp = YES;
+                    }
+                    completion:nil];
+  }
+  [self.game chooseCardAtIndex:index];
+  [self updateUI];
 }
 
 - (void)startNewGame {

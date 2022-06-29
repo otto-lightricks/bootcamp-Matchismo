@@ -28,10 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (Deck *)createDeck;
 - (void)startNewGame;
 - (void)setUpCards;
+- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card;
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card;
 - (void)resizeCards;
 - (BOOL)cardsViewTooLarge;
 - (void)updateUI;
-- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card;
+- (void)handleCardSelectionAtIndex:(int)index;
+- (void)animateCardView:(CardView *)cardView toPosition:(CGPoint)point withDelay:(CGFloat)delay;
 
 @end
 

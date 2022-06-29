@@ -38,40 +38,44 @@ const int DEFAULT_NUMBER_OF_CARDS = 12;
   self.game.mode = GameMode::threeCard;
 }
 
-- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card {
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card {
   if (![card isKindOfClass:[SetCard class]]) {
-    return;
+    return [[CardView alloc] initWithFrame:frame];
   }
   SetCard *setCard = (SetCard *)card;
-  CGRect cardFrame = CGRectMake(point.x, point.y, [self cardWidth], [self cardHeight]);
-  auto setCardView = [[SetCardView alloc] initWithFrame:cardFrame];
+  auto setCardView = [[SetCardView alloc] initWithFrame:frame];
   setCardView.numberOfShapes = setCard.numberOfShapes;
   setCardView.shape = setCard.shape;
   setCardView.shading = setCard.shading;
   setCardView.color = setCard.color;
   
-  UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
-                                          initWithTarget:self
-                                                  action:@selector(handleCardSelection:)];
-  [setCardView addGestureRecognizer:tapRecognizer];
-  
-  [self.cardsView addSubview:setCardView];
-  [self.cardViews addObject:setCardView];
+  return setCardView;
 }
 
 - (void)updateUI {
   int i = 0;
   while (i < self.cardViews.count) {
-    auto *card = [self.game cardAtIndex:i];
+    auto card = [self.game cardAtIndex:i];
+    auto cardView = self.cardViews[i];
     if (card.matched) {
-      [self.cardViews[i] removeFromSuperview];
+      [UIView animateWithDuration:1.0
+                       animations:^{
+                         int x = (arc4random() % (int)(self.cardsView.bounds.size.width * 5))
+                                 - (int)self.cardsView.bounds.size.width * 2;
+                         int y = self.cardsView.bounds.size.height;
+                         self.cardViews[i].center = CGPointMake(x, -y);
+                       }
+                       completion:^(BOOL finished) {
+                         [cardView removeFromSuperview];
+                       }
+      ];
+      
       [self.game removeCard:card];
-      [self.cardViews removeObject:self.cardViews[i]];
+      [self.cardViews removeObject:cardView];
     } else {
       [self.cardViews[i] setAlpha:card.chosen ? 0.85 : 1.0];
       i++;
     }
-
   }
   self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
 }
@@ -81,23 +85,17 @@ const int DEFAULT_NUMBER_OF_CARDS = 12;
   [super startNewGame];
 }
 
-- (CGPoint)findNextFreeCardPosition {
+- (CGPoint)getNextFreeCardPosition {
+  int rows = ceil(self.cardViews.count / (double)self.numberOfCardsPerRow);
+  int cardsOnTheSameRow = self.cardViews.count - (rows - 1) * self.numberOfCardsPerRow;
+  BOOL fitsOnRow = cardsOnTheSameRow < self.numberOfCardsPerRow;
   CGFloat xPos = 0;
-  CGFloat yPos = 0;
-  int i = 1;
-  auto hitView = [self.cardsView hitTest:CGPointMake(xPos + [self cardWidth] / 2,
-                                                     yPos + [self cardHeight] / 2)
-                               withEvent:nil];
-  while ([hitView isKindOfClass:[SetCardView class]]) {
-    if (i % self.numberOfCardsPerRow == 0) {
-      xPos = 0;
-      yPos += [self cardHeight] + self.defaultGapBetweenCards;
-    } else {
-      xPos += [self cardWidth] + self.defaultGapBetweenCards;
-    }
-    ++i;
-    hitView = [self.cardsView hitTest:CGPointMake(xPos + [self cardWidth] / 2,
-                                                  yPos + [self cardHeight] / 2) withEvent:nil];
+  CGFloat yPos = rows * self.cardHeight + rows * self.defaultGapBetweenCards;
+  if (fitsOnRow) {
+    xPos = cardsOnTheSameRow * self.cardWidth
+                   + cardsOnTheSameRow * self.defaultGapBetweenCards;
+    yPos = (rows - 1) * self.cardHeight
+                   + (rows - 1) * self.defaultGapBetweenCards;
   }
   return CGPointMake(xPos, yPos);
 }
@@ -107,7 +105,7 @@ const int DEFAULT_NUMBER_OF_CARDS = 12;
   if (card) {
     if ([card isKindOfClass:[SetCard class]]) {
       SetCard *setCard = (SetCard *)card;
-      CGPoint point = [self findNextFreeCardPosition];
+      CGPoint point = [self getNextFreeCardPosition];
       [self createCardViewToPoint:point withCard:setCard];
       [self.game addCard:card];
       if ([self cardsViewTooLarge]) {

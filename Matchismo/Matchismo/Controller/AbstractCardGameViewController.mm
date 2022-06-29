@@ -13,7 +13,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AbstractCardGameViewController()
+@interface AbstractCardGameViewController() <UIDynamicAnimatorDelegate>
+
+@property (readwrite, nonatomic) UIDynamicAnimator *animator;
+@property (nonatomic) UIView *cardPileView;
 
 @end
 
@@ -73,6 +76,14 @@ const int DEFAULT_NUMBER_OF_CARDS = 24;
   return _game;
 }
 
+- (UIDynamicAnimator *)animator {
+  if(!_animator) {
+    _animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.cardsView];
+    _animator.delegate = self;
+  }
+  return _animator;
+}
+
 - (CardMatchingGame *)makeGame {
   return nil;
 }
@@ -85,6 +96,8 @@ const int DEFAULT_NUMBER_OF_CARDS = 24;
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.cardViews = [[NSMutableArray alloc] init];
+  [self.cardsView addGestureRecognizer:[[UIPinchGestureRecognizer alloc]
+                                        initWithTarget:self action:@selector(pinch:)]];
   [self setUpCards];
 }
 
@@ -123,11 +136,32 @@ const int DEFAULT_NUMBER_OF_CARDS = 24;
   }
 }
 
+- (void)createCardViewToPoint:(CGPoint)point withCard:(Card *)card {
+  CGRect cardFrame = CGRectMake(-2 * self.cardWidth,
+                                -2 * self.cardHeight,
+                                [self cardWidth],
+                                [self cardHeight]);
+  auto cardView = [self createCardViewWithFrame:cardFrame withCard:card];
+  
+  UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
+                                          initWithTarget:self
+                                                  action:@selector(handleCardSelection:)];
+  [cardView addGestureRecognizer:tapRecognizer];
+  
+  [self.cardsView addSubview:cardView];
+  [self.cardViews addObject:cardView];
+
+  [self animateCardView:cardView
+             toPosition:point
+              withDelay:0.01 * [self.cardViews indexOfObject:cardView]];
+}
+
 - (void)removeAllCardsFromView {
   for (CardView *cardView in self.cardViews) {
     [cardView removeFromSuperview];
   }
   [self.cardViews removeAllObjects];
+  [self.cardPileView removeFromSuperview];
 }
 
 - (void)findSmallestNumberOfCardsPerRow {
@@ -142,13 +176,30 @@ const int DEFAULT_NUMBER_OF_CARDS = 24;
   }
 }
 
+- (void)animateCardView:(CardView *)cardView toPosition:(CGPoint)point withDelay:(CGFloat)delay {
+  [UIView animateWithDuration:1.0
+                        delay:delay
+                      options:0
+                   animations:^{
+                       CGRect cardFrame = CGRectMake(point.x,
+                                                     point.y,
+                                                     [self cardWidth],
+                                                     [self cardHeight]);
+                       [cardView setFrame:cardFrame];
+                     }
+                   completion:nil];
+}
+
 - (void)resizeCards {
   [self findSmallestNumberOfCardsPerRow];
   CGFloat xPos = 0;
   CGFloat yPos = 0;
   for (int i = 1; i <= self.cardViews.count; i++) {
     CardView *cardView = self.cardViews[i-1];
-    CGRect cardFrame = CGRectMake(xPos, yPos, [self cardWidth], [self cardHeight]);
+    CGRect cardFrame = CGRectMake(xPos,
+                                  yPos,
+                                  [self cardWidth],
+                                  [self cardHeight]);
     [cardView setFrame:cardFrame];
     if (i % self.numberOfCardsPerRow == 0) {
       xPos = 0;
@@ -177,23 +228,105 @@ const int DEFAULT_NUMBER_OF_CARDS = 24;
     if (index == NSNotFound) {
       return;
     }
-    [self.game chooseCardAtIndex:index];
-    [self updateUI];
-    [self resizeCards];
+    [self handleCardSelectionAtIndex:index];
   }
 }
 
+- (void)handleCardSelectionAtIndex:(int)index {
+  [self.game chooseCardAtIndex:index];
+  [self updateUI];
+  [self resizeCards];
+}
+
 - (IBAction)newGameButtonClicked:(UIButton *)sender {
-  [self startNewGame];
+    [UIView animateWithDuration:1.0
+                     animations:^{
+                       for (CardView *cardView in self.cardViews) {
+                         int x = (arc4random() % (int)(self.cardsView.bounds.size.width * 5))
+                                 - (int)self.cardsView.bounds.size.width * 2;
+                         int y = self.cardsView.bounds.size.height;
+                         cardView.center = CGPointMake(x, -y);
+                       }
+                     }
+                     completion:^(BOOL finished) {
+                       [self startNewGame];
+                     }];
 }
 
 - (void)startNewGame {
   self.deck = [self createDeck];
   self.game = [self makeGame];
+  [self.animator removeAllBehaviors];
   [self removeAllCardsFromView];
   self.scoreLabel.text = [NSString stringWithFormat:@"Score: %lld", (long long)self.game.score];
   [self setUpCards];
   [self resizeCards];
+}
+
+- (void)dynamicAnimatorDidPause:(UIDynamicAnimator *)animator {
+  if (self.animator.isRunning) {
+    return;
+  }
+  [self.animator removeAllBehaviors];
+  [self.cardPileView addGestureRecognizer:[[UIPanGestureRecognizer alloc]
+                                            initWithTarget:self action:@selector(moveCardPile:)]];
+  [self.cardPileView addGestureRecognizer:[[UITapGestureRecognizer alloc]
+                                            initWithTarget:self action:@selector(tapCardPile:)]];
+}
+
+- (void)pinch:(UIPinchGestureRecognizer *)recognizer {
+  if ([self.cardsView.subviews containsObject:self.cardPileView]) {
+    return;
+  }
+  CGPoint middle = CGPointMake(self.cardsView.bounds.origin.x
+                               + self.cardsView.bounds.size.width / 2,
+                               self.cardsView.bounds.origin.y
+                               + self.cardsView.bounds.size.height / 2);
+  for (CardView *cardView in self.cardViews) {
+    UISnapBehavior *snap = [[UISnapBehavior alloc] initWithItem:cardView
+                                                    snapToPoint:middle];
+    snap.damping = 1.0;
+    [self.animator addBehavior:snap];
+  }
+  
+  self.cardPileView = [[UIView alloc] initWithFrame:CGRectMake(middle.x - self.cardWidth / 2,
+                                                                middle.y - self.cardHeight / 2,
+                                                                self.cardWidth,
+                                                                self.cardHeight)];
+  [self.cardsView addSubview:self.cardPileView];
+}
+
+- (void)moveCardPile:(UIPanGestureRecognizer *)recognizer {
+  CGPoint position = [recognizer locationInView:self.cardsView];
+  
+  for (CardView *cardView in self.cardViews) {
+    cardView.frame = CGRectMake(position.x - self.cardWidth / 2,
+                                position.y - self.cardHeight / 2,
+                                self.cardWidth,
+                                self.cardHeight);
+  }
+  
+  self.cardPileView.frame = CGRectMake(position.x - self.cardWidth / 2,
+                                        position.y - self.cardHeight / 2,
+                                        self.cardWidth,
+                                        self.cardHeight);
+}
+
+- (void)tapCardPile:(UITapGestureRecognizer *)recognizer {
+  CGFloat xPos = 0;
+  CGFloat yPos = 0;
+  for (int i = 1; i <= self.cardViews.count; i++) {
+    CardView *cardView = self.cardViews[i-1];
+    [self animateCardView:cardView toPosition:CGPointMake(xPos, yPos) withDelay:0.05 * (i-1)];
+    if (i % self.numberOfCardsPerRow == 0) {
+      xPos = 0;
+      yPos += [self cardHeight] + self.defaultGapBetweenCards;
+    } else {
+      xPos += [self cardWidth] + self.defaultGapBetweenCards;
+    }
+  }
+  [self.cardPileView removeFromSuperview];
+  [self.animator removeAllBehaviors];
 }
 
 @end
