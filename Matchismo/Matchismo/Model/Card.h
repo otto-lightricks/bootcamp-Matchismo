@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface Card : NSObject
 
 struct MatchResult {
@@ -14,10 +16,12 @@ struct MatchResult {
   NSMutableArray<Card *> *matches;
 };
 
-@property (strong, nonatomic) NSString *contents;
+@property (readonly, nonatomic) NSString *contents;
 @property (nonatomic) BOOL chosen;
 @property (nonatomic) BOOL matched;
 
 - (MatchResult)match:(NSArray *)otherCards;
 
 @end
+
+NS_ASSUME_NONNULL_END
